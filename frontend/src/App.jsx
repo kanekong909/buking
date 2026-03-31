@@ -23,7 +23,7 @@ function ProtectedLayout({ children, requireAdmin = false }) {
   );
 
   if (!user) return <Navigate to="/auth" replace />;
-  if (requireAdmin && user.rol !== 'administrador') return <Navigate to="/dashboard" replace />;
+  if (requireAdmin && user?.rol !== 'administrador') return <Navigate to="/dashboard" replace />;
 
   return (
     <div className="app-layout">
@@ -40,20 +40,17 @@ function AppRoutes() {
 
   if (loading) return <div className="loading-page"><div className="spinner" /></div>;
 
+  const isAdmin = user?.rol === 'administrador';
+
   return (
     <Routes>
-      {/* Landing pública */}
       <Route path="/" element={<LandingPage />} />
+      <Route path="/auth" element={user ? <Navigate to={isAdmin ? '/admin' : '/dashboard'} /> : <AuthPage />} />
 
-      {/* Auth — si ya está logueado, redirige */}
-      <Route path="/auth" element={user ? <Navigate to={user.rol === 'administrador' ? '/admin' : '/dashboard'} /> : <AuthPage />} />
-
-      {/* Cliente */}
       <Route path="/dashboard" element={<ProtectedLayout><Dashboard /></ProtectedLayout>} />
       <Route path="/reservar" element={<ProtectedLayout><NuevaReserva /></ProtectedLayout>} />
       <Route path="/mis-reservas" element={<ProtectedLayout><MisReservas /></ProtectedLayout>} />
 
-      {/* Admin */}
       <Route path="/admin" element={<ProtectedLayout requireAdmin><AdminDashboard /></ProtectedLayout>} />
       <Route path="/admin/reservas" element={<ProtectedLayout requireAdmin><AdminReservas /></ProtectedLayout>} />
       <Route path="/admin/disponibilidad" element={<ProtectedLayout requireAdmin><AdminDisponibilidad /></ProtectedLayout>} />
