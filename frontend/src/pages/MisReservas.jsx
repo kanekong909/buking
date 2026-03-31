@@ -95,7 +95,7 @@ export default function MisReservas() {
                     <td style={{ color: 'var(--text-muted)' }}>#{r.id}</td>
                     <td style={{ fontWeight: 500 }}>{r.servicio_nombre}</td>
                     <td>
-                      {format(new Date(r.fecha + 'T00:00:00'), "d MMM yyyy", { locale: es })}
+                      {format(new Date(String(r.fecha).slice(0, 10) + 'T12:00:00'), "d MMM yyyy", { locale: es })}
                     </td>
                     <td style={{ fontFamily: 'monospace', fontSize: '0.85rem' }}>
                       {r.hora_inicio?.slice(0,5)} – {r.hora_fin?.slice(0,5)}

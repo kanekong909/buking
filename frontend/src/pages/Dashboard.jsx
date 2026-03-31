@@ -80,7 +80,7 @@ export default function Dashboard() {
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                       <div>
                         <div className="fecha">
-                          {format(new Date(r.fecha + 'T00:00:00'), "EEEE d 'de' MMMM", { locale: es })}
+                          {format(new Date(String(r.fecha).slice(0, 10) + 'T12:00:00'), "EEEE d 'de' MMMM", { locale: es })}
                         </div>
                         <div className="hora">{r.hora_inicio?.slice(0, 5)} – {r.hora_fin?.slice(0, 5)}</div>
                         <div className="servicio">{r.servicio_nombre}</div>

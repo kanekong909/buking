@@ -78,7 +78,7 @@ export default function AdminReservas() {
                     </td>
                     <td style={{ fontSize: '0.85rem' }}>{r.servicio_nombre}</td>
                     <td style={{ fontSize: '0.85rem' }}>
-                      {r.fecha ? format(new Date(r.fecha + 'T00:00:00'), "d MMM yyyy", { locale: es }) : '—'}
+                      {r.fecha ? format(new Date(String(r.fecha).slice(0, 10) + 'T12:00:00'), "d MMM yyyy", { locale: es }) : '—'}
                     </td>
                     <td style={{ fontFamily: 'monospace', fontSize: '0.8rem' }}>
                       {r.hora_inicio?.slice(0,5)} – {r.hora_fin?.slice(0,5)}

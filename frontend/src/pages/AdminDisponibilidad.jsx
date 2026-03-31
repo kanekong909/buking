@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { api } from '../lib/api';
-import { format, addDays } from 'date-fns';
+import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 
 export default function AdminDisponibilidad() {
@@ -52,11 +52,17 @@ export default function AdminDisponibilidad() {
     }
   };
 
+  // Normalizar fecha (Postgres puede devolver '2026-04-01T00:00:00.000Z')
+  const normalizeSlots = slots.map(s => ({
+    ...s,
+    fecha: (s.fecha || '').toString().slice(0, 10)
+  }));
+
   // Agrupar por fecha
-  const porFecha = slots.reduce((acc, s) => {
-    const key = s.fecha;
-    if (!acc[key]) acc[key] = [];
-    acc[key].push(s);
+  const porFecha = normalizeSlots.reduce((acc, s) => {
+    if (!s.fecha) return acc;
+    if (!acc[s.fecha]) acc[s.fecha] = [];
+    acc[s.fecha].push(s);
     return acc;
   }, {});
 
@@ -105,7 +111,7 @@ export default function AdminDisponibilidad() {
                 </div>
                 <div className="form-group">
                   <label className="form-label">Cupos disponibles</label>
-                  <input className="form-input" type="number" min={1} max={50} value={form.cupos_totales} onChange={e => setForm(f => ({ ...f, cupos_totales: parseInt(e.target.value) }))} style={{ maxWidth: 100 }} />
+                  <input className="form-input" type="number" min={1} max={50} value={form.cupos_totales} onChange={e => setForm(f => ({ ...f, cupos_totales: parseInt(e.target.value) || 1 }))} style={{ maxWidth: 100 }} />
                 </div>
               </div>
               <div className="modal-footer">
@@ -130,7 +136,7 @@ export default function AdminDisponibilidad() {
           {Object.entries(porFecha).sort(([a],[b]) => a.localeCompare(b)).map(([fecha, fSlots]) => (
             <div key={fecha} className="card">
               <div className="card-header">
-                <h3>{format(new Date(fecha + 'T00:00:00'), "EEEE d 'de' MMMM yyyy", { locale: es })}</h3>
+                <h3>{format(new Date(fecha + 'T12:00:00'), "EEEE d 'de' MMMM yyyy", { locale: es })}</h3>
                 <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{fSlots.length} horarios</span>
               </div>
               <div className="table-wrapper">

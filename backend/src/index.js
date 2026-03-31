@@ -19,6 +19,12 @@ app.use(cors({
 }));
 app.use(express.json());
 
+// Deshabilitar caché para la API
+app.use('/api', (req, res, next) => {
+  res.set('Cache-Control', 'no-store');
+  next();
+});
+
 // Health check
 app.get('/health', (req, res) => res.json({ status: 'ok', timestamp: new Date() }));
 

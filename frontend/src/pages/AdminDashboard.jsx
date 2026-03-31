@@ -75,7 +75,7 @@ export default function AdminDashboard() {
                       <div style={{ color: 'var(--text-muted)', fontSize: '0.72rem' }}>{r.usuario_email}</div>
                     </td>
                     <td style={{ fontSize: '0.8rem' }}>{r.servicio_nombre}</td>
-                    <td style={{ fontSize: '0.8rem' }}>{r.fecha ? format(new Date(r.fecha + 'T00:00:00'), 'd MMM', { locale: es }) : ''}</td>
+                    <td style={{ fontSize: '0.8rem' }}>{r.fecha ? format(new Date(String(r.fecha).slice(0, 10) + 'T12:00:00'), 'd MMM', { locale: es }) : ''}</td>
                     <td>
                       <span className={`badge badge-${r.estado === 'activa' ? 'success' : r.estado === 'cancelada' ? 'danger' : 'neutral'}`}>
                         {r.estado}

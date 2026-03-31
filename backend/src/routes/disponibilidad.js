@@ -4,9 +4,9 @@ const { authMiddleware, adminMiddleware } = require('../middleware/auth');
 
 const router = express.Router();
 
-// GET /api/disponibilidad?servicio_id=&fecha=
 router.get('/', authMiddleware, async (req, res) => {
   const { servicio_id, fecha } = req.query;
+  const isAdmin = req.user?.rol === 'administrador';
   try {
     let query = `
       SELECT d.*, s.nombre AS servicio_nombre, s.duracion_minutos,
@@ -15,8 +15,12 @@ router.get('/', authMiddleware, async (req, res) => {
       JOIN servicios s ON s.id = d.servicio_id
       WHERE d.activo = true
         AND d.fecha >= CURRENT_DATE
-        AND (d.cupos_totales - d.cupos_ocupados) > 0
     `;
+
+    if (!isAdmin) {
+      query += ' AND (d.cupos_totales - d.cupos_ocupados) > 0';
+    }
+
     const params = [];
     if (servicio_id) {
       params.push(servicio_id);
@@ -36,13 +40,11 @@ router.get('/', authMiddleware, async (req, res) => {
   }
 });
 
-// POST /api/disponibilidad - crear slot (admin)
 router.post('/', authMiddleware, adminMiddleware, async (req, res) => {
   const { servicio_id, fecha, hora_inicio, hora_fin, cupos_totales } = req.body;
   if (!servicio_id || !fecha || !hora_inicio || !hora_fin)
     return res.status(400).json({ error: 'Todos los campos son obligatorios' });
-  
-  // RN08: no se puede crear disponibilidad en fechas pasadas
+
   if (new Date(fecha) < new Date().setHours(0,0,0,0))
     return res.status(400).json({ error: 'No se puede crear disponibilidad en fechas pasadas' });
 
@@ -53,11 +55,11 @@ router.post('/', authMiddleware, adminMiddleware, async (req, res) => {
     );
     res.status(201).json(result.rows[0]);
   } catch (err) {
+    console.error(err);
     res.status(500).json({ error: 'Error creando disponibilidad' });
   }
 });
 
-// DELETE /api/disponibilidad/:id - desactivar slot (admin)
 router.delete('/:id', authMiddleware, adminMiddleware, async (req, res) => {
   try {
     await pool.query('UPDATE disponibilidad SET activo = false WHERE id = $1', [req.params.id]);

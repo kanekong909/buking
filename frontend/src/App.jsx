@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import Sidebar from './components/Sidebar';
+import LandingPage from './pages/LandingPage';
 import AuthPage from './pages/AuthPage';
 import Dashboard from './pages/Dashboard';
 import NuevaReserva from './pages/NuevaReserva';
@@ -41,6 +42,10 @@ function AppRoutes() {
 
   return (
     <Routes>
+      {/* Landing pública */}
+      <Route path="/" element={<LandingPage />} />
+
+      {/* Auth — si ya está logueado, redirige */}
       <Route path="/auth" element={user ? <Navigate to={user.rol === 'administrador' ? '/admin' : '/dashboard'} /> : <AuthPage />} />
 
       {/* Cliente */}
@@ -56,7 +61,7 @@ function AppRoutes() {
       <Route path="/admin/usuarios" element={<ProtectedLayout requireAdmin><AdminUsuarios /></ProtectedLayout>} />
       <Route path="/admin/reportes" element={<ProtectedLayout requireAdmin><AdminReportes /></ProtectedLayout>} />
 
-      <Route path="*" element={<Navigate to={user ? (user.rol === 'administrador' ? '/admin' : '/dashboard') : '/auth'} />} />
+      <Route path="*" element={<Navigate to="/" />} />
     </Routes>
   );
 }
