@@ -11,7 +11,11 @@ export default function AdminDashboard() {
 
   useEffect(() => {
     Promise.all([api.getReservas(), api.getUsuarios(), api.getReportes({})])
-      .then(([r, u, rep]) => { setReservas(r); setUsuarios(u); setReportes(rep); })
+      .then(([r, u, rep]) => { 
+  setReservas(Array.isArray(r) ? r : []); 
+  setUsuarios(Array.isArray(u) ? u : []); 
+  setReportes(Array.isArray(rep) ? rep : []); 
+})
       .catch(() => {})
       .finally(() => setLoading(false));
   }, []);

@@ -35,17 +35,18 @@ function ProtectedLayout({ children, requireAdmin = false }) {
   );
 }
 
-function AppRoutes() {
+function AuthRoute() {
   const { user, loading } = useAuth();
-
   if (loading) return <div className="loading-page"><div className="spinner" /></div>;
+  if (!user) return <AuthPage />;
+  return <Navigate to={user?.rol === 'administrador' ? '/admin' : '/dashboard'} replace />;
+}
 
-  const isAdmin = user?.rol === 'administrador';
-
+function AppRoutes() {
   return (
     <Routes>
       <Route path="/" element={<LandingPage />} />
-      <Route path="/auth" element={user ? <Navigate to={isAdmin ? '/admin' : '/dashboard'} /> : <AuthPage />} />
+      <Route path="/auth" element={<AuthRoute />} />
 
       <Route path="/dashboard" element={<ProtectedLayout><Dashboard /></ProtectedLayout>} />
       <Route path="/reservar" element={<ProtectedLayout><NuevaReserva /></ProtectedLayout>} />

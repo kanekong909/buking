@@ -14,7 +14,7 @@ export default function Dashboard() {
 
   useEffect(() => {
     Promise.all([api.getReservas(), api.getNotificaciones()])
-      .then(([r, n]) => { setReservas(r); setNotifs(n); })
+      .then(([r, n]) => { setReservas(Array.isArray(r) ? r : []); setNotifs(Array.isArray(n) ? n : []); })
       .catch(() => {})
       .finally(() => setLoading(false));
   }, []);
