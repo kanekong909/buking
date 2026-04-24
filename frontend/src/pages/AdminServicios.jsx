@@ -22,6 +22,7 @@ export default function AdminServicios() {
 
   const abrirNuevo = () => {
     setEditando(null);
+    if (success) { const t = setTimeout(() => setSuccess(''), 3000); return () => clearTimeout(t); }
     setForm({ nombre: '', descripcion: '', duracion_minutos: 60 });
     setError('');
     setShowForm(true);
@@ -59,8 +60,8 @@ export default function AdminServicios() {
   const handleEliminarUno = async (id) => {
     if (!confirm('¿Desactivar este servicio?')) return;
     try {
-      await api.deleteServicio(id);
-      setSuccess('Servicio desactivado');
+      const r = await api.deleteServicio(id);
+      setSuccess(r.eliminado ? 'Servicio eliminado correctamente' : 'Servicio desactivado (tiene reservas activas)');
       setSeleccionados(prev => { const n = new Set(prev); n.delete(id); return n; });
       load();
     } catch (err) {
@@ -73,8 +74,10 @@ export default function AdminServicios() {
     if (!confirm(`¿Desactivar ${seleccionados.size} servicio(s) seleccionado(s)?`)) return;
     setEliminando(true);
     try {
-      await Promise.all([...seleccionados].map(id => api.deleteServicio(id)));
-      setSuccess(`${seleccionados.size} servicio(s) desactivados`);
+      const resultados = await Promise.all([...seleccionados].map(id => api.deleteServicio(id)));
+      const eliminados = resultados.filter(r => r.eliminado).length;
+      const desactivados = resultados.filter(r => r.desactivado).length;
+      setSuccess(`${eliminados} eliminado(s), ${desactivados} desactivado(s) por tener reservas activas`);
       setSeleccionados(new Set());
       load();
     } catch (err) {

@@ -4,7 +4,7 @@ const { authMiddleware, adminMiddleware } = require('../middleware/auth');
 
 const router = express.Router();
 
-// GET /api/servicios - listar todos activos
+// GET /api/servicios
 router.get('/', authMiddleware, async (req, res) => {
   try {
     const result = await pool.query(
@@ -16,7 +16,7 @@ router.get('/', authMiddleware, async (req, res) => {
   }
 });
 
-// POST /api/servicios - crear (admin)
+// POST /api/servicios
 router.post('/', authMiddleware, adminMiddleware, async (req, res) => {
   const { nombre, descripcion, duracion_minutos } = req.body;
   if (!nombre) return res.status(400).json({ error: 'El nombre es obligatorio' });
@@ -31,7 +31,7 @@ router.post('/', authMiddleware, adminMiddleware, async (req, res) => {
   }
 });
 
-// PUT /api/servicios/:id - actualizar (admin)
+// PUT /api/servicios/:id
 router.put('/:id', authMiddleware, adminMiddleware, async (req, res) => {
   const { nombre, descripcion, duracion_minutos, activo } = req.body;
   try {
@@ -46,13 +46,34 @@ router.put('/:id', authMiddleware, adminMiddleware, async (req, res) => {
   }
 });
 
-// DELETE /api/servicios/:id - desactivar (admin)
+// DELETE /api/servicios/:id — elimina si no tiene reservas, desactiva si tiene
 router.delete('/:id', authMiddleware, adminMiddleware, async (req, res) => {
+  const { id } = req.params;
   try {
-    await pool.query('UPDATE servicios SET activo = false WHERE id = $1', [req.params.id]);
-    res.json({ message: 'Servicio desactivado' });
+    // Verificar si tiene reservas activas asociadas
+    const reservas = await pool.query(
+      `SELECT COUNT(*) FROM reservas r
+       JOIN disponibilidad d ON d.id = r.disponibilidad_id
+       WHERE d.servicio_id = $1 AND r.estado = 'activa'`,
+      [id]
+    );
+
+    const tieneReservas = parseInt(reservas.rows[0].count) > 0;
+
+    if (tieneReservas) {
+      // Si tiene reservas activas, solo desactivar
+      await pool.query('UPDATE servicios SET activo = false WHERE id = $1', [id]);
+      return res.json({ message: 'Servicio desactivado (tiene reservas activas asociadas)', desactivado: true });
+    }
+
+    // Sin reservas activas — eliminar completamente
+    await pool.query('DELETE FROM disponibilidad WHERE servicio_id = $1', [id]);
+    await pool.query('DELETE FROM servicios WHERE id = $1', [id]);
+    res.json({ message: 'Servicio eliminado correctamente', eliminado: true });
+
   } catch (err) {
-    res.status(500).json({ error: 'Error desactivando servicio' });
+    console.error(err);
+    res.status(500).json({ error: 'Error eliminando servicio' });
   }
 });
 
