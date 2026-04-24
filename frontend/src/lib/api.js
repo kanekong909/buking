@@ -21,38 +21,42 @@ async function request(path, options = {}) {
   return data;
 }
 
+async function requestArray(path, options = {}) {
+  try {
+    const data = await request(path, options);
+    return Array.isArray(data) ? data : [];
+  } catch {
+    return [];
+  }
+}
+
 export const api = {
-  // Auth
   register: (body) => request('/auth/register', { method: 'POST', body: JSON.stringify(body) }),
   login: (body) => request('/auth/login', { method: 'POST', body: JSON.stringify(body) }),
   me: () => request('/auth/me'),
 
-  // Servicios
-  getServicios: () => request('/servicios'),
+  getServicios: () => requestArray('/servicios'),
   createServicio: (body) => request('/servicios', { method: 'POST', body: JSON.stringify(body) }),
   updateServicio: (id, body) => request(`/servicios/${id}`, { method: 'PUT', body: JSON.stringify(body) }),
   deleteServicio: (id) => request(`/servicios/${id}`, { method: 'DELETE' }),
 
-  // Disponibilidad
   getDisponibilidad: (params) => {
     const q = new URLSearchParams(params).toString();
-    return request(`/disponibilidad?${q}`);
+    return requestArray(`/disponibilidad?${q}`);
   },
   createDisponibilidad: (body) => request('/disponibilidad', { method: 'POST', body: JSON.stringify(body) }),
   deleteDisponibilidad: (id) => request(`/disponibilidad/${id}`, { method: 'DELETE' }),
 
-  // Reservas
-  getReservas: () => request('/reservas'),
+  getReservas: () => requestArray('/reservas'),
   createReserva: (body) => request('/reservas', { method: 'POST', body: JSON.stringify(body) }),
   cancelarReserva: (id) => request(`/reservas/${id}`, { method: 'DELETE' }),
   getReportes: (params) => {
     const q = new URLSearchParams(params).toString();
-    return request(`/reservas/reportes?${q}`);
+    return requestArray(`/reservas/reportes?${q}`);
   },
 
-  // Usuarios
-  getUsuarios: () => request('/usuarios'),
+  getUsuarios: () => requestArray('/usuarios'),
   updateUsuario: (id, body) => request(`/usuarios/${id}`, { method: 'PUT', body: JSON.stringify(body) }),
-  getNotificaciones: () => request('/usuarios/notificaciones'),
+  getNotificaciones: () => requestArray('/usuarios/notificaciones'),
   marcarLeida: (id) => request(`/usuarios/notificaciones/${id}/leida`, { method: 'PUT' }),
 };
